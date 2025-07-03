@@ -13,15 +13,22 @@ import pickle
 from transformers import pipeline
 from sklearn.metrics.pairwise import cosine_similarity
 
+# --- Constants ---
+CHUNK_SIZE_EMBED = 100
+CHUNK_SIZE_SAVE = 500
+EMBEDDINGS_FILE = "embeddings.pkl"
+
+
 def fetch_text_from_url(url):
     """
-    Fetch the text data from specific URL
+    Fetch the text data from specific URL using the requests library and BeautifulSoup.
 
     Input: URL link  
     Output: the text array
 
     Meaning:  
-    
+    in order to extract the text content from a webpage, we use the requests library to fetch the HTML content and BeautifulSoup to parse it.
+    The function returns the text content of the webpage, which can then be used for further processing
     """
     try:
         res = requests.get(url)
@@ -32,18 +39,20 @@ def fetch_text_from_url(url):
 
 def get_embedding(client, documents):
     """
-    Embeds a list of documents using the provided embedding model.
+    get_embedding(client, documents) -> np.ndarray:
+    Encodes the input documents into vector embeddings using the OpenAI API.
 
     Input:
-        model (SentenceTransformer): A model that converts text to embeddings.
-        documents (List[str]): A list of sentences or paragraphs.
+        client (OpenAI): An instance of the OpenAI client to interact with the API.
+        documents (List[str]): A list of documents to be embedded.
 
     Output:
-        np.ndarray: 2D array where each row is the embedding of a document.
+        np.ndarray: The embedding vector for the first document in the list.
 
     Meaning:
-    Transforms the list of text documents into numerical vectors that
-    represent their meaning in high-dimensional space.
+    encodes the input documents into vector embeddings using the OpenAI API.
+    The function takes a list of documents and returns the embedding for the first document. The model used is "text-embedding-3-small", which is suitable for generating embeddings for text data.
+    The embeddings can be used for various tasks such as similarity search, clustering, or classification.
     """
     response = client.embeddings.create(
         input=documents,
@@ -66,12 +75,47 @@ def get_top_k_similar_docs(query_vec, doc_vecs, k=3):
             - Corresponding similarity scores  
 
     Meaning:
-
+    This function computes the cosine similarity between a query vector and a list of document vectors, returning the indices and scores of the top-k most similar documents.
+    The cosine similarity is a measure of similarity between two non-zero vectors, defined as the cosine of the angle between them. It is often used in information retrieval and natural language processing to find documents that are most similar to a given query.
+    The function returns the indices of the top-k most similar documents and their corresponding similarity scores.
     """
     similarities = cosine_similarity([query_vec], doc_vecs)[0]  # shape: (num_docs,)
     top_indices = np.argsort(similarities)[::-1][:k]  # Sort by descending similarity
     return top_indices, similarities
 
+
+
+# Initialize session state to store document chunks and embeddings
+@st.cache_data
+def initialize_session_state():
+    if "doc_chunks" not in st.session_state:
+        st.session_state.doc_chunks = []
+        st.session_state.doc_embeddings = []
+
+# Function to chunk text into smaller pieces
+# This function takes a string and splits it into chunks of a specified size.
+def chunk_text(text: str, chunk_size: int):
+    return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+
+# Function to embed chunks of text using OpenAI API
+# This function takes a list of text chunks and returns their embeddings using the OpenAI API.
+def embed_chunks(client, chunks):
+    return [get_embedding(client, chunk) for chunk in chunks]
+
+# Function to save and load embeddings and chunks
+# This function saves the embeddings and chunks to a file using pickle.
+def save_embeddings(chunks, embeddings, filename=EMBEDDINGS_FILE):
+    with open(filename, "wb") as f:
+        pickle.dump({"chunks": chunks, "embeddings": embeddings}, f)
+
+# Function to load embeddings and chunks from a file
+# This function loads the embeddings and chunks from a file using pickle.
+def load_embeddings(filename=EMBEDDINGS_FILE):
+    with open(filename, "rb") as f:
+        data = pickle.load(f)
+    return data["chunks"], data["embeddings"]
+
+# Main function to run the Streamlit app
 def main():
     load_dotenv()  # take environment variables
     
@@ -89,84 +133,70 @@ def main():
         api_key=os.environ.get("OPENAI_API_KEY"),
     )
 
-    if "doc_chunks" not in st.session_state:
-        st.session_state.doc_chunks = []
-        st.session_state.doc_embeddings = []
-    
+    initialize_session_state()
+    # --- Section 2: Display Embedded Content ---
     if embed_button and url:
-        text = fetch_text_from_url(url)
-        text = text.replace("\n","")
-        chunks = [text[i:i+100] for i in range(0, len(text), 100)]
-        embeddings = [get_embedding(client,chunk) for chunk in chunks]
+        text = fetch_text_from_url(url).replace("\n", "")
+        chunks = chunk_text(text, CHUNK_SIZE_EMBED)
+        print(f"Number of chunks: {len(chunks)}")
+        if len(chunks) == 0:
+            st.error("No content found at the provided URL.")
+            return
         
+        embeddings = embed_chunks(client, chunks)
+        if len(embeddings) == 0:
+            st.error("Failed to embed the content.")
+            return
+        print(f"Number of embeddings: {len(embeddings)}")
+        # Store chunks and embeddings in session state
         st.session_state.doc_chunks = chunks
         st.session_state.doc_embeddings = embeddings
-
         st.success(f"Embedded {len(chunks)} chunks from the website.")
-
+    
     if embed_and_save_button and url:
-        text = fetch_text_from_url(url)
-        text = text.replace("\n","")
-        chunks = [text[i:i+500] for i in range(0, len(text), 500)]
-
-        embeddings = [get_embedding(client,chunk) for chunk in chunks]
-
-        # Save both embeddings and chunks
-        with open("embeddings.pkl", "wb") as f:
-            pickle.dump({"chunks": chunks, "embeddings": embeddings}, f)
-        
+        text = fetch_text_from_url(url).replace("\n", "")
+        chunks = chunk_text(text, CHUNK_SIZE_SAVE)
+        embeddings = embed_chunks(client, chunks)
+        save_embeddings(chunks, embeddings)
         st.session_state.doc_chunks = chunks
         st.session_state.doc_embeddings = embeddings
-
-        st.success(f"✅ Embedded {len(chunks)} chunks from the website. and saved to embeddings.pkl")
-
+        st.success(f"✅ Embedded {len(chunks)} chunks and saved to {EMBEDDINGS_FILE}")
+    
     if load_pkl_File_button:
-        # Load from file
-        with open("embeddings.pkl", "rb") as f:
-            data = pickle.load(f)
+        try:
+            chunks, embeddings = load_embeddings()
+            st.session_state.doc_chunks = chunks
+            st.session_state.doc_embeddings = embeddings
+            st.success("Loaded embeddings from file.")
+        except Exception as e:
+            st.error(f"Failed to load embeddings: {e}")
 
-        # Access chunks and embeddings
-        loaded_chunks = data["chunks"]
-        loaded_embeddings = data["embeddings"]
-
-        st.session_state.doc_chunks = loaded_chunks
-        st.session_state.doc_embeddings = loaded_embeddings
-
-    #prompt
+    
     prompt = st.chat_input("Say something")
     if prompt:
         st.write(f"User has sent the following prompt: {prompt}")
-        if len(st.session_state.doc_embeddings) != 0:
-            question_vec = get_embedding(client,prompt)
-            top_indices, similarities  = get_top_k_similar_docs(question_vec, st.session_state.doc_embeddings)
+        if st.session_state.doc_embeddings:
+            question_vec = get_embedding(client, prompt)
+            top_indices, similarities = get_top_k_similar_docs(question_vec, st.session_state.doc_embeddings)
             top_docs = [st.session_state.doc_chunks[i] for i in top_indices]
-            # Construct a prompt
             context = "\n".join(top_docs)
-
-            # prompt before the prompt
-            # you need to setup the prompt structure that allow to response on purpose to the user
-            prompt = f"""You are a helpful assistant. Use the following context to answer the question:
+            prompt_text = f"""You are a helpful assistant. Use the following context to answer the question:
 
             Context:
             {context}
 
             Question: {prompt}
             Answer:"""
-
             completion = client.chat.completions.create(
                 model="gpt-4.1-nano",
                 messages=[
                     {"role": "system", "content": "You are an assistant who is helping answer a questions. Please answer as if you are talking to a 8 years old children"},
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    },
+                    {"role": "user", "content": prompt_text},
                 ],
             )
             st.write(f"Answer: {completion.choices[0].message.content}")
-            #st.text_area("Answer:", completion.choices[0].message.content, height=400)
         else:
-            st.warning("Please embedded a website first.")
+            st.warning("Please embed a website first.")
 # Ensures the script runs only when executed directly, not when imported
 if __name__ == '__main__':
     main()
