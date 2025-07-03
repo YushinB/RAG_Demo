@@ -5,11 +5,10 @@ from dotenv import load_dotenv
 import os
 import requests
 from bs4 import BeautifulSoup
-from sentence_transformers import SentenceTransformer
+#from sentence_transformers import SentenceTransformer
 import numpy as np
 from openai import OpenAI
 import pickle
-
 from transformers import pipeline
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -30,6 +29,11 @@ def fetch_text_from_url(url):
     in order to extract the text content from a webpage, we use the requests library to fetch the HTML content and BeautifulSoup to parse it.
     The function returns the text content of the webpage, which can then be used for further processing
     """
+    # if the URL is not valid, return an empty string
+    if not url.startswith("http://") and not url.startswith("https://"):
+        return ""
+    # try to fetch the content from the URL
+    # if the URL is not valid or the content cannot be fetched, return an empty string
     try:
         res = requests.get(url)
         soup = BeautifulSoup(res.text, 'html.parser')
@@ -88,6 +92,11 @@ def get_top_k_similar_docs(query_vec, doc_vecs, k=3):
 # Initialize session state to store document chunks and embeddings
 @st.cache_data
 def initialize_session_state():
+    """Initializes the session state for storing document chunks and embeddings.
+    Meaning:
+    This function checks if the session state variables for document chunks and embeddings exist, and if not, initializes them as empty lists.
+    This is useful for maintaining state across user interactions in a Streamlit application, allowing the application to remember previously embedded documents and their corresponding embeddings.
+    """
     if "doc_chunks" not in st.session_state:
         st.session_state.doc_chunks = []
         st.session_state.doc_embeddings = []
@@ -95,28 +104,70 @@ def initialize_session_state():
 # Function to chunk text into smaller pieces
 # This function takes a string and splits it into chunks of a specified size.
 def chunk_text(text: str, chunk_size: int):
+    """    Splits the input text into smaller chunks of a specified size.
+    Input:
+        text (str): The input text to be chunked.
+        chunk_size (int): The size of each chunk.  
+    Output:
+        List[str]: A list of text chunks, each of size chunk_size or smaller.   
+    Meaning:
+    This function takes a string and splits it into smaller pieces of a specified size. It returns a list of text chunks, each of size chunk_size or smaller. This is useful for processing large texts in manageable pieces, especially when working with models that have input size limitations.
+    """
     return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
 
 # Function to embed chunks of text using OpenAI API
 # This function takes a list of text chunks and returns their embeddings using the OpenAI API.
 def embed_chunks(client, chunks):
+    """    Embeds a list of text chunks using the OpenAI API.
+    Input:
+        client (OpenAI): An instance of the OpenAI client to interact with the API.
+        chunks (List[str]): A list of text chunks to be embedded. 
+    Output:
+        List[np.ndarray]: A list of embeddings for each text chunk.
+    Meaning:
+    This function takes a list of text chunks and returns their embeddings using the OpenAI API.
+    The embeddings are vector representations of the text chunks, which can be used for various tasks such as similarity search, clustering, or classification.
+    """
     return [get_embedding(client, chunk) for chunk in chunks]
 
 # Function to save and load embeddings and chunks
 # This function saves the embeddings and chunks to a file using pickle.
 def save_embeddings(chunks, embeddings, filename=EMBEDDINGS_FILE):
+    """    Saves the embeddings and chunks to a file using pickle.
+    Input:
+        chunks (List[str]): A list of text chunks.
+        embeddings (List[np.ndarray]): A list of embeddings corresponding to the text chunks.
+    filename (str): The name of the file to save the embeddings and chunks. Default is "embeddings.pkl".
+    Meaning:
+    This function saves the embeddings and chunks to a file using pickle. It allows you to persist the embeddings and chunks for later use, avoiding the need to re-embed the text every time the application is run.
+    """
     with open(filename, "wb") as f:
         pickle.dump({"chunks": chunks, "embeddings": embeddings}, f)
 
 # Function to load embeddings and chunks from a file
 # This function loads the embeddings and chunks from a file using pickle.
 def load_embeddings(filename=EMBEDDINGS_FILE):
+    """    Loads the embeddings and chunks from a file using pickle.
+    Input:
+        filename (str): The name of the file to load the embeddings and chunks from. Default is "embeddings.pkl".
+    Output:
+        Tuple[List[str], List[np.ndarray]]: A tuple containing a list of text chunks and a list of embeddings.
+    Meaning:
+    This function loads the embeddings and chunks from a file using pickle. It allows you to retrieve previously saved embeddings and chunks, enabling you to use them without re-embedding the text.
+    """
     with open(filename, "rb") as f:
         data = pickle.load(f)
     return data["chunks"], data["embeddings"]
 
 # Main function to run the Streamlit app
 def main():
+    """Main function to run the Streamlit app for embedding and querying website content.
+    Meaning:
+    This function initializes the Streamlit app, sets up the user interface, and handles user interactions for embedding website content and querying it.
+    It allows users to input a URL, embed the content from that URL, and then ask questions based on the embedded content.
+    """
+    # Load environment variables
+    # This is useful for storing sensitive information like API keys.
     load_dotenv()  # take environment variables
     
     st.title("🧠 Simple RAG with Web Content")
@@ -128,12 +179,16 @@ def main():
     embed_and_save_button = st.button("Embed Content and save to *.pkl file")
     load_pkl_File_button = st.button("Load the embedded *.pkl file")
 
+    # Initialize OpenAI client
+    # This is the client that will be used to interact with the OpenAI API for embedding
     client = OpenAI(
     # This is the default and can be omitted
         api_key=os.environ.get("OPENAI_API_KEY"),
     )
 
+    # Initialize session state for document chunks and embeddings
     initialize_session_state()
+    
     # --- Section 2: Display Embedded Content ---
     if embed_button and url:
         text = fetch_text_from_url(url).replace("\n", "")
@@ -155,8 +210,24 @@ def main():
     
     if embed_and_save_button and url:
         text = fetch_text_from_url(url).replace("\n", "")
+        if not text:
+            st.error("No content found at the provided URL.")
+            return
+        st.write(f"Fetched text from {url} with length: {len(text)} characters.")
+        if len(text) < CHUNK_SIZE_SAVE:
+            st.error(f"Text is too short to chunk. Minimum length is {CHUNK_SIZE_SAVE} characters.")
+            return
         chunks = chunk_text(text, CHUNK_SIZE_SAVE)
+        print(f"Number of chunks: {len(chunks)}")
+        if len(chunks) == 0:
+            st.error("No content found at the provided URL.")
+            return
         embeddings = embed_chunks(client, chunks)
+        if len(embeddings) == 0:
+            st.error("Failed to embed the content.")
+            return
+        print(f"Number of embeddings: {len(embeddings)}")
+        # Store chunks and embeddings in session state and save to file
         save_embeddings(chunks, embeddings)
         st.session_state.doc_chunks = chunks
         st.session_state.doc_embeddings = embeddings
@@ -175,6 +246,10 @@ def main():
     prompt = st.chat_input("Say something")
     if prompt:
         st.write(f"User has sent the following prompt: {prompt}")
+        #check if embeddings are available
+        if not st.session_state.doc_embeddings:
+            st.warning("Please embed a website first.")
+            return
         if st.session_state.doc_embeddings:
             question_vec = get_embedding(client, prompt)
             top_indices, similarities = get_top_k_similar_docs(question_vec, st.session_state.doc_embeddings)
