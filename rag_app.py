@@ -1,5 +1,9 @@
 # rag_app.py
-
+# --- Description ---
+# This is a simple RAG (Retrieval-Augmented Generation) application that allows users to embed website content and ask questions based on that content.
+# It uses the OpenAI API for embeddings and a simple chat interface for interaction.
+# --- Imports ---
+# These are the libraries and modules that are imported for use in the application.
 import streamlit as st # GUI libray for data science 
 from dotenv import load_dotenv
 import os
@@ -11,6 +15,9 @@ from openai import OpenAI
 import pickle
 from transformers import pipeline
 from sklearn.metrics.pairwise import cosine_similarity
+import time
+import pdfplumber  # Library for PDF text extraction
+import io
 
 # --- Constants ---
 CHUNK_SIZE_EMBED = 100
@@ -159,6 +166,21 @@ def load_embeddings(filename=EMBEDDINGS_FILE):
         data = pickle.load(f)
     return data["chunks"], data["embeddings"]
 
+def extract_text_from_pdf(uploaded_file):
+    """Extracts text from a PDF file using pdfplumber.
+    Input:
+        uploaded_file (UploadedFile): The PDF file uploaded by the user.
+    Output:
+        str: The extracted text from the PDF file.
+    Meaning:
+    This function takes a PDF file uploaded by the user and extracts its text content using the pdfplumber library.
+    It reads each page of the PDF and concatenates the extracted text into a single string, which can then be used for further processing or embedding.
+    """
+    text = ""
+    with pdfplumber.open(uploaded_file) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text() or ""
+    return text
 # Main function to run the Streamlit app
 def main():
     """Main function to run the Streamlit app for embedding and querying website content.
@@ -172,106 +194,185 @@ def main():
     
     st.title("🧠 Simple RAG with Web Content")
 
-    # --- Section 1: Input URL & Embed ---
-    st.header("1. Embed Website Content")
-    url = st.text_input("Enter a website URL:")
-    embed_button = st.button("Embed Content")
-    embed_and_save_button = st.button("Embed Content and save to *.pkl file")
-    load_pkl_File_button = st.button("Load the embedded *.pkl file")
+    Embedding_Tab, Display_Tab, RAG_Tab = st.tabs(["Embedding", "Embedded Results", "Retrieval Chatbot"])
+# --- Section 1: Input URL & Embed ---
+    with Embedding_Tab:
 
-    # Initialize OpenAI client
-    # This is the client that will be used to interact with the OpenAI API for embedding
-    client = OpenAI(
-    # This is the default and can be omitted
-        api_key=os.environ.get("OPENAI_API_KEY"),
-    )
+        # Initialize session state for document chunks and embeddings
+        # This is the client that will be used to interact with the OpenAI API for embedding
+        client = OpenAI(
+        # This is the default and can be omitted
+            api_key=os.environ.get("OPENAI_API_KEY"),
+        )
 
-    # Initialize session state for document chunks and embeddings
-    initialize_session_state()
-    
-    # --- Section 2: Display Embedded Content ---
-    if embed_button and url:
-        text = fetch_text_from_url(url).replace("\n", "")
-        chunks = chunk_text(text, CHUNK_SIZE_EMBED)
-        print(f"Number of chunks: {len(chunks)}")
-        if len(chunks) == 0:
-            st.error("No content found at the provided URL.")
-            return
-        
-        embeddings = embed_chunks(client, chunks)
-        if len(embeddings) == 0:
-            st.error("Failed to embed the content.")
-            return
-        print(f"Number of embeddings: {len(embeddings)}")
-        # Store chunks and embeddings in session state
-        st.session_state.doc_chunks = chunks
-        st.session_state.doc_embeddings = embeddings
-        st.success(f"Embedded {len(chunks)} chunks from the website.")
-    
-    if embed_and_save_button and url:
-        text = fetch_text_from_url(url).replace("\n", "")
-        if not text:
-            st.error("No content found at the provided URL.")
-            return
-        st.write(f"Fetched text from {url} with length: {len(text)} characters.")
-        if len(text) < CHUNK_SIZE_SAVE:
-            st.error(f"Text is too short to chunk. Minimum length is {CHUNK_SIZE_SAVE} characters.")
-            return
-        chunks = chunk_text(text, CHUNK_SIZE_SAVE)
-        print(f"Number of chunks: {len(chunks)}")
-        if len(chunks) == 0:
-            st.error("No content found at the provided URL.")
-            return
-        embeddings = embed_chunks(client, chunks)
-        if len(embeddings) == 0:
-            st.error("Failed to embed the content.")
-            return
-        print(f"Number of embeddings: {len(embeddings)}")
-        # Store chunks and embeddings in session state and save to file
-        save_embeddings(chunks, embeddings)
-        st.session_state.doc_chunks = chunks
-        st.session_state.doc_embeddings = embeddings
-        st.success(f"✅ Embedded {len(chunks)} chunks and saved to {EMBEDDINGS_FILE}")
-    
-    if load_pkl_File_button:
-        try:
-            chunks, embeddings = load_embeddings()
-            st.session_state.doc_chunks = chunks
-            st.session_state.doc_embeddings = embeddings
-            st.success("Loaded embeddings from file.")
-        except Exception as e:
-            st.error(f"Failed to load embeddings: {e}")
+        # Initialize session state for document chunks and embeddings
+        initialize_session_state()
 
-    
-    prompt = st.chat_input("Say something")
-    if prompt:
-        st.write(f"User has sent the following prompt: {prompt}")
-        #check if embeddings are available
-        if not st.session_state.doc_embeddings:
-            st.warning("Please embed a website first.")
-            return
-        if st.session_state.doc_embeddings:
-            question_vec = get_embedding(client, prompt)
-            top_indices, similarities = get_top_k_similar_docs(question_vec, st.session_state.doc_embeddings)
-            top_docs = [st.session_state.doc_chunks[i] for i in top_indices]
-            context = "\n".join(top_docs)
-            prompt_text = f"""You are a helpful assistant. Use the following context to answer the question:
-
-            Context:
-            {context}
-
-            Question: {prompt}
-            Answer:"""
-            completion = client.chat.completions.create(
-                model="gpt-4.1-nano",
-                messages=[
-                    {"role": "system", "content": "You are an assistant who is helping answer a questions. Please answer as if you are talking to a 8 years old children"},
-                    {"role": "user", "content": prompt_text},
-                ],
+         # --- Section 1: Input URL & Embed ---
+        st.header("1. Embed Content from Various Sources")
+        source_type = st.radio("Select content source:", ["Web URL", "Text", "PDF","*.pkl file" ])
+        text_input = ""
+        url = ""
+        if source_type == "Web URL":
+            urls = st.text_area(
+                "Enter one or more website URLs (one per line):",
+                placeholder="https://example.com\nhttps://another.com"
             )
-            st.write(f"Answer: {completion.choices[0].message.content}")
+            if urls:
+                url_list = [u.strip() for u in urls.splitlines() if u.strip()]
+                for url in url_list:
+                    text_input += fetch_text_from_url(url).replace("\n", "")
+        elif source_type == "Text":
+            uploaded_text_file = st.file_uploader("Upload a text file", type=["txt"])
+            if uploaded_text_file is not None:
+                text_input = uploaded_text_file.read().decode("utf-8")
+            else:
+                text_input = ""
+            if text_input:
+                text_input = text_input.replace("\n", "")
+        elif source_type == "PDF":
+            uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
+            if uploaded_file:
+                text_input = extract_text_from_pdf(uploaded_file)
+        elif source_type == "*.pkl file":
+            uploaded_pkl_file = st.file_uploader("Upload an embedded *.pkl file", type=["pkl"])
+            if uploaded_pkl_file is not None:
+                try:
+                    data = pickle.load(uploaded_pkl_file)
+                    st.session_state.doc_chunks = data["chunks"]
+                    st.session_state.doc_embeddings = data["embeddings"]
+                    st.success("Loaded embeddings from uploaded file.")
+                except Exception as e:
+                    st.error(f"Failed to load embeddings: {e}")
+        
+        if source_type != "*.pkl file":
+            embed_button = st.button("Embed Content")
+            # Initialize OpenAI client
+            # This is the client that will be used to interact with the OpenAI API for embedding
+            client = OpenAI(
+            # This is the default and can be omitted
+                api_key=os.environ.get("OPENAI_API_KEY"),
+            )
+
+            # Initialize session state for document chunks and embeddings
+            initialize_session_state()
+            
+            # --- Section 2: Display Embedded Content ---
+            if embed_button and text_input:
+                st.write(f"Fetched text from {url} with length: {len(text_input)} characters.")
+                if len(text_input) < CHUNK_SIZE_SAVE:
+                    st.error(f"Text is too short to chunk. Minimum length is {CHUNK_SIZE_SAVE} characters.")
+                    return
+                chunks = chunk_text(text_input, CHUNK_SIZE_EMBED)
+                print(f"Number of chunks: {len(chunks)}")
+                if len(chunks) == 0:
+                    st.error("No content found at the provided URL.")
+                    return
+                
+                embeddings = embed_chunks(client, chunks)
+                if len(embeddings) == 0:
+                    st.error("Failed to embed the content.")
+                    return
+                print(f"Number of embeddings: {len(embeddings)}")
+                # Store chunks and embeddings in session state
+                st.session_state.doc_chunks = chunks
+                st.session_state.doc_embeddings = embeddings
+                st.success(f"Embedded {len(chunks)} chunks from the website.")
+            
+            if st.session_state.get("doc_chunks") and st.session_state.get("doc_embeddings"):
+                save_to_pkl_button = st.button("Save current embeddings to *.pkl file")
+                if save_to_pkl_button:
+                    custom_filename = st.text_input(
+                            "Enter a custom filename for the embeddings (with .pkl extension):",
+                            value=EMBEDDINGS_FILE,
+                            key="custom_pkl_filename"
+                        )
+                    pkl_buffer = io.BytesIO()
+                    pickle.dump(
+                        {
+                            "chunks": st.session_state.doc_chunks,
+                            "embeddings": st.session_state.doc_embeddings
+                        },
+                        pkl_buffer
+                    )
+                    pkl_buffer.seek(0)
+                    st.download_button(
+                        label="Download Embedded Data",
+                        data=pkl_buffer,
+                        file_name=custom_filename if custom_filename else EMBEDDINGS_FILE,
+                        mime="application/octet-stream"
+                    )
+                    st.success(f"✅ Embeddings ready for download as {custom_filename if custom_filename else EMBEDDINGS_FILE}")
+                # Display the number of chunks and embeddings
+                st.write(f"Number of chunks: {len(st.session_state.doc_chunks)}")   
+
+# --- Section 2: Display Embedded Content ---
+    with Display_Tab:
+        st.header("Embedded Results")
+        if st.session_state.get("doc_chunks") and st.session_state.get("doc_embeddings"):
+            st.write(f"**Number of Chunks:** {len(st.session_state.doc_chunks)}")
+            st.write(f"**Number of Embeddings:** {len(st.session_state.doc_embeddings)}")
+            st.write("**Preview of Embedded Chunks:**")
+            for i, chunk in enumerate(st.session_state.doc_chunks[:5]):
+                st.markdown(f"**Chunk {i+1}:** {chunk[:300]}{'...' if len(chunk) > 300 else ''}")
         else:
-            st.warning("Please embed a website first.")
-# Ensures the script runs only when executed directly, not when imported
+            st.info("No embedded content available. Please embed content first.")
+# --- Section 2: RAG Chatbot ---
+    with RAG_Tab:
+        # --- Section 3: RAG Chatbot ---
+        st.header("2. Ask Questions")
+        # Initialize chat history
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+        # Display chat history
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+        
+        # React to user input
+        if prompt := st.chat_input("Say something"):
+            # Display user message in chat message container
+            st.chat_message("user").markdown(prompt)
+            # Add user message to chat history
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            # Simulate assistant response (replace with actual model call)
+            if not st.session_state.doc_embeddings:
+                st.warning("Please embed a website first.")
+                return
+            # Initialize OpenAI client
+            # Display assistant response in chat message container
+            response = "This is a simulated response. Replace with actual model call."
+            with st.chat_message("assistant"):
+                if st.session_state.doc_embeddings:
+                    question_vec = get_embedding(client, prompt)
+                    top_indices, similarities = get_top_k_similar_docs(question_vec, st.session_state.doc_embeddings)
+                    top_docs = [st.session_state.doc_chunks[i] for i in top_indices]
+                    context = "\n".join(top_docs)
+                    prompt_text = f"""You are a helpful assistant. Use the following context to answer the question:
+
+                    Context:
+                    {context}
+
+                    Question: {prompt}
+                    Answer:"""
+                    completion = client.chat.completions.create(
+                        model="gpt-4.1-nano",
+                        messages=[
+                            {"role": "system", "content": "You are an assistant who is helping answer a questions. Please answer as if you are talking to a 8 years old children"},
+                            {"role": "user", "content": prompt_text},
+                        ],
+                    )
+                    response = f"Answer: {completion.choices[0].message.content}"
+                    st.markdown(response)
+                else:
+                    st.warning("Please embed a website first.")
+            # Add assistant response to chat history
+            st.session_state.messages.append({"role": "assistant", "content": response})
+        # Clear chat history button
+        if st.button("Clear Chat History"):
+            st.session_state.messages = []
+            st.success("Chat history cleared.")
+
+# --- Main Function ---
 if __name__ == '__main__':
     main()

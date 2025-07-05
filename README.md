@@ -6,18 +6,51 @@ In this example, OpenAI’s embedding and language models are used. However, if 
 
 ## Features
 
-- **Fetch and embed website content:** Enter a URL, fetch its text, and create embeddings using OpenAI's embedding API.
-- **Chunking:** Website text is split into manageable chunks for embedding.
-- **Save and load embeddings:** Save embeddings and chunks to a `.pkl` file and reload them later if you want, the purpose is to save the cost for everytime you use the embedding model of openai.
-- **Question answering:** Ask questions in a chat interface. The app retrieves the most relevant chunks and uses OpenAI's GPT model to answer your question using the context.
+### Fetch and embed contents
+   
+The demo provides several ways to embed content, including from a web URL, text file, or PDF. The website text is first split into manageable chunks, which are then embedded using OpenAI's embedding API.
+  
+### Save and load embeddings:
+
+Save embeddings and chunks to a `.pkl` file and reload them later if you want, the purpose is to save the cost for everytime you use the embedding model of openai.
+
+### Query or Question answering 
+
+Ask questions in a chat interface. The app retrieves the most relevant chunks and uses OpenAI's GPT model to answer your question using the context.
 
 ## GUI
 
-I’ve created a simple GUI that includes a text box for loading a URL, embedding its content, and querying it through a chatbot-style interface. Please see the image below for reference.
+The application features a user-friendly GUI built with Streamlit, organized into three main tabs:
 
-![alt text](GUI.png)
+- **Embedding Tab:**  
+  Allows you to select the content source (Web URL, text file, PDF, or existing `.pkl` file), embed the content, and (optionally) save the embeddings to a `.pkl` file for later use. You can input multiple URLs, upload text or PDF files, and manage your embeddings easily.
 
-This demo uses the Python library streamlit to create the GUI. You can learn more about this library on its [official website](https://docs.streamlit.io/get-started/tutorials).
+- **Embedded Results Tab:**  
+  Displays a summary of the embedded content, including the number of chunks and a preview of the first few embedded text chunks. This helps you verify what content has been processed and is available for retrieval.
+
+- **Retrieval Chatbot Tab:**  
+  Provides a chat interface where you can ask questions about the embedded content. The app retrieves the most relevant chunks and uses OpenAI's GPT model to answer your question using the provided context.
+
+The GUI is designed to make the workflow intuitive:  
+1. **Embed content** from your chosen source.  
+2. **Review embedded results** to confirm the content.  
+3. **Ask questions** and get answers based on your embedded knowledge.
+
+Please see the image below for reference:
+* Tab1: Embedding Tab
+  
+![alt text](./img/GUI1.png)
+
+* Tab2: Embedded Results Tab
+
+![alt text](./img/GUI2.png)
+
+* Tab3: Retrieval Chatbot Tab
+
+![alt text](./img/GUI3.png)
+
+This demo uses the Python library Streamlit to create the GUI. You can learn more about this library on its [official website](https://docs.streamlit.io/get-started/tutorials).
+
 ## Requirements
 
 - Python 3.8+
