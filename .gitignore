@@ -35,3 +35,10 @@ yarn-error.log*
 *.pkl
 logs/
 venv/
+.streamlit/
+*.toml
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
