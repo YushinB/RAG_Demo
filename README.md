@@ -98,6 +98,17 @@ This demo uses the Python library Streamlit to create the GUI. You can learn mor
      ```sh
     ./setup_env.sh
     ```
+
+You can also deploy your production app using cloud services such as: 
+- [Streamlit Community Cloud](https://streamlit.io/cloud) (free for public repos)
+- [Render](https://render.com/)
+- [Heroku](https://www.heroku.com/)
+- [Azure Web Apps](https://azure.microsoft.com/en-us/products/app-service/)
+
+I've already deployed the app on Streamlit Community Cloud — feel free to check it out:
+
+👉 [yushinragdemo](https://yushinragdemo.streamlit.app/)
+
 2. **In the web UI:**
     - Enter a website URL and click "Embed Content" to fetch and embed the content.
     - Optionally, click "Embed Content and save to *.pkl file" to save embeddings for later use.
