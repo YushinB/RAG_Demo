@@ -18,39 +18,6 @@ Save embeddings and chunks to a `.pkl` file and reload them later if you want, t
 
 Ask questions in a chat interface. The app retrieves the most relevant chunks and uses OpenAI's GPT model to answer your question using the context.
 
-## GUI
-
-The application features a user-friendly GUI built with Streamlit, organized into three main tabs:
-
-- **Embedding Tab:**  
-  Allows you to select the content source (Web URL, text file, PDF, or existing `.pkl` file), embed the content, and (optionally) save the embeddings to a `.pkl` file for later use. You can input multiple URLs, upload text or PDF files, and manage your embeddings easily.
-
-- **Embedded Results Tab:**  
-  Displays a summary of the embedded content, including the number of chunks and a preview of the first few embedded text chunks. This helps you verify what content has been processed and is available for retrieval.
-
-- **Retrieval Chatbot Tab:**  
-  Provides a chat interface where you can ask questions about the embedded content. The app retrieves the most relevant chunks and uses OpenAI's GPT model to answer your question using the provided context.
-
-The GUI is designed to make the workflow intuitive:  
-1. **Embed content** from your chosen source.  
-2. **Review embedded results** to confirm the content.  
-3. **Ask questions** and get answers based on your embedded knowledge.
-
-Please see the image below for reference:
-* Tab1: Embedding Tab
-  
-![alt text](./img/GUI1.png)
-
-* Tab2: Embedded Results Tab
-
-![alt text](./img/GUI2.png)
-
-* Tab3: Retrieval Chatbot Tab
-
-![alt text](./img/GUI3.png)
-
-This demo uses the Python library Streamlit to create the GUI. You can learn more about this library on its [official website](https://docs.streamlit.io/get-started/tutorials).
-
 ## Requirements
 
 - Python 3.8+
@@ -99,21 +66,48 @@ This demo uses the Python library Streamlit to create the GUI. You can learn mor
     ./setup_env.sh
     ```
 
-You can also deploy your production app using cloud services such as: 
-- [Streamlit Community Cloud](https://streamlit.io/cloud) (free for public repos)
-- [Render](https://render.com/)
-- [Heroku](https://www.heroku.com/)
-- [Azure Web Apps](https://azure.microsoft.com/en-us/products/app-service/)
+    You can also deploy your production app using cloud services such as: 
+    - [Streamlit Community Cloud](https://streamlit.io/cloud) (free for public repos)
+    - [Render](https://render.com/)
+    - [Heroku](https://www.heroku.com/)
+    - [Azure Web Apps](https://azure.microsoft.com/en-us/products/app-service/)
 
-I've already deployed the app on Streamlit Community Cloud — feel free to check it out:
+    I've already deployed the app on Streamlit Community Cloud — feel free to check it out:
 
-👉 [yushinragdemo](https://yushinragdemo.streamlit.app/)
+    👉 [yushinragdemo](https://yushinragdemo.streamlit.app/)
 
 2. **In the web UI:**
-    - Enter a website URL and click "Embed Content" to fetch and embed the content.
-    - Optionally, click "Embed Content and save to *.pkl file" to save embeddings for later use.
-    - Click "Load the embedded *.pkl file" to reload saved embeddings.
-    - Use the chat input to ask questions about the embedded content.
+
+    The application features a user-friendly GUI built with Streamlit, organized into three main tabs:
+
+    - **Embedding Tab:**  
+    Allows you to select the content source (Web URL, text file, PDF, or existing `.pkl` file), embed the content, and (optionally) save the embeddings to a `.pkl` file for later use. You can input multiple URLs, upload text or PDF files, and manage your embeddings easily.
+
+    - **Embedded Results Tab:**  
+    Displays a summary of the embedded content, including the number of chunks and a preview of the first few embedded text chunks. This helps you verify what content has been processed and is available for retrieval.
+
+    - **Retrieval Chatbot Tab:**  
+    Provides a chat interface where you can ask questions about the embedded content. The app retrieves the most relevant chunks and uses OpenAI's GPT model to answer your question using the provided context.
+
+    The GUI is designed to make the workflow intuitive:  
+    1. **Embed content** from your chosen source.  
+    2. **Review embedded results** to confirm the content.  
+    3. **Ask questions** and get answers based on your embedded knowledge.
+
+    Please see the image below for reference:
+    * Tab1: Embedding Tab
+    
+    ![alt text](./img/GUI1.png)
+
+    * Tab2: Embedded Results Tab
+
+    ![alt text](./img/GUI2.png)
+
+    * Tab3: Retrieval Chatbot Tab
+
+    ![alt text](./img/GUI3.png)
+
+    This demo uses the Python library Streamlit to create the GUI. You can learn more about this library on its [official website](https://docs.streamlit.io/get-started/tutorials).
 
 ## File Structure
 
