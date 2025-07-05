@@ -13,7 +13,6 @@ from bs4 import BeautifulSoup
 import numpy as np
 from openai import OpenAI
 import pickle
-from transformers import pipeline
 from sklearn.metrics.pairwise import cosine_similarity
 import pdfplumber  # Library for PDF text extraction
 import io
