@@ -15,7 +15,6 @@ from openai import OpenAI
 import pickle
 from transformers import pipeline
 from sklearn.metrics.pairwise import cosine_similarity
-import time
 import pdfplumber  # Library for PDF text extraction
 import io
 
@@ -194,20 +193,19 @@ def main():
     
     st.title("🧠 Simple RAG with Web Content")
 
+    # Initialize session state for document chunks and embeddings
+    # This is the client that will be used to interact with the OpenAI API for embedding
+    client = OpenAI(
+    # This is the default and can be omitted
+        api_key=os.environ.get("OPENAI_API_KEY"),
+    )
+
+    # Initialize session state for document chunks and embeddings
+    initialize_session_state()
+
     Embedding_Tab, Display_Tab, RAG_Tab = st.tabs(["Embedding", "Embedded Results", "Retrieval Chatbot"])
 # --- Section 1: Input URL & Embed ---
     with Embedding_Tab:
-
-        # Initialize session state for document chunks and embeddings
-        # This is the client that will be used to interact with the OpenAI API for embedding
-        client = OpenAI(
-        # This is the default and can be omitted
-            api_key=os.environ.get("OPENAI_API_KEY"),
-        )
-
-        # Initialize session state for document chunks and embeddings
-        initialize_session_state()
-
          # --- Section 1: Input URL & Embed ---
         st.header("1. Embed Content from Various Sources")
         source_type = st.radio("Select content source:", ["Web URL", "Text", "PDF","*.pkl file" ])
@@ -234,6 +232,10 @@ def main():
             uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
             if uploaded_file:
                 text_input = extract_text_from_pdf(uploaded_file)
+            if text_input:
+                text_input = text_input.replace("\n", "")
+            print(f"Extracted text length: {len(text_input)} characters.")
+            print(f"Extracted text: {text_input[:300]}{'...' if len(text_input) > 300 else ''}")
         elif source_type == "*.pkl file":
             uploaded_pkl_file = st.file_uploader("Upload an embedded *.pkl file", type=["pkl"])
             if uploaded_pkl_file is not None:
@@ -247,16 +249,6 @@ def main():
         
         if source_type != "*.pkl file":
             embed_button = st.button("Embed Content")
-            # Initialize OpenAI client
-            # This is the client that will be used to interact with the OpenAI API for embedding
-            client = OpenAI(
-            # This is the default and can be omitted
-                api_key=os.environ.get("OPENAI_API_KEY"),
-            )
-
-            # Initialize session state for document chunks and embeddings
-            initialize_session_state()
-            
             # --- Section 2: Display Embedded Content ---
             if embed_button and text_input:
                 st.write(f"Fetched text from {url} with length: {len(text_input)} characters.")
@@ -339,7 +331,6 @@ def main():
             if not st.session_state.doc_embeddings:
                 st.warning("Please embed a website first.")
                 return
-            # Initialize OpenAI client
             # Display assistant response in chat message container
             response = "This is a simulated response. Replace with actual model call."
             with st.chat_message("assistant"):
