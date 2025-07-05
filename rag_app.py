@@ -193,6 +193,11 @@ def main():
     
     st.title("🧠 Simple RAG with Web Content")
 
+    openai_api_key = os.environ.get("OPENAI_API_KEY")
+    if not openai_api_key:
+        st.error("OPENAI_API_KEY is not set. Please set it in your environment variables or Streamlit secrets.")
+        st.stop()
+    
     # Initialize session state for document chunks and embeddings
     # This is the client that will be used to interact with the OpenAI API for embedding
     client = OpenAI(
