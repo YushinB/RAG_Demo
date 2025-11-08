@@ -188,20 +188,25 @@ def main():
     """
     # Load environment variables
     # This is useful for storing sensitive information like API keys.
-    load_dotenv()  # take environment variables
+    
+    # Clear any existing OPENAI_API_KEY from system environment to ensure we use the file
+    if 'OPENAI_API_KEY' in os.environ:
+        del os.environ['OPENAI_API_KEY']
+    
+    # Now load from sample.env file
+    load_dotenv()  # Load from sample.env file specifically
     
     st.title("🧠 Simple RAG with Web Content")
-
-    openai_api_key = os.environ.get("OPENAI_API_KEY")
+    openai_api_key = os.environ.get("OPENAI_API_KEY")    
+     # Check if the OpenAI API key is set
     if not openai_api_key:
         st.error("OPENAI_API_KEY is not set. Please set it in your environment variables or Streamlit secrets.")
         st.stop()
-    
     # Initialize session state for document chunks and embeddings
     # This is the client that will be used to interact with the OpenAI API for embedding
     client = OpenAI(
     # This is the default and can be omitted
-        api_key=os.environ.get("OPENAI_API_KEY"),
+        api_key=openai_api_key,
     )
 
     # Initialize session state for document chunks and embeddings

@@ -8,3 +8,9 @@ pdfplumber
 python-dotenv
 requests
 transformers
+rank-bm25
+spacy
+torch
+datasets
+pandas
+numpy

@@ -42,3 +42,6 @@ venv/
 dist/
 build/
 *.egg-info/
+# Coverage reports
+.coverage
+htmlcov/
