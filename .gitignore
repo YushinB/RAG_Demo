@@ -42,3 +42,12 @@ venv/
 dist/
 build/
 *.egg-info/
+
+# Docker volumes and data
+chromadb_data/
+.docker/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
