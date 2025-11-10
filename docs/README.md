@@ -45,6 +45,22 @@ Detailed research report comparing 6 vector database options.
 
 ---
 
+#### [ARCHITECTURE.md](ARCHITECTURE.md)
+Visual architecture documentation with comprehensive diagrams.
+- Current vs future architecture
+- Docker network architecture
+- Data flow diagrams (embedding & query)
+- Deployment options
+- Component interactions
+- Technology stack
+- Performance comparisons
+- Security architecture
+- Scalability path
+
+**Best for:** Visual learners, architects, understanding system design
+
+---
+
 #### [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
 Step-by-step guide for migrating from pickle files to ChromaDB.
 - Why migrate?
@@ -91,20 +107,23 @@ Executive summary of the entire investigation.
 ### Path 1: Quick Setup (5 minutes)
 1. [QUICKSTART.md](QUICKSTART.md)
 
-### Path 2: Understanding the Technology (15 minutes)
+### Path 2: Understanding the Technology (20 minutes)
 1. [INVESTIGATION_SUMMARY.md](INVESTIGATION_SUMMARY.md)
-2. [vector_database_investigation.md](vector_database_investigation.md)
+2. [ARCHITECTURE.md](ARCHITECTURE.md)
+3. [vector_database_investigation.md](vector_database_investigation.md)
 
 ### Path 3: Production Deployment (30 minutes)
 1. [INVESTIGATION_SUMMARY.md](INVESTIGATION_SUMMARY.md)
-2. [DOCKER_SETUP.md](DOCKER_SETUP.md)
-3. [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
+2. [ARCHITECTURE.md](ARCHITECTURE.md)
+3. [DOCKER_SETUP.md](DOCKER_SETUP.md)
+4. [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
 
 ### Path 4: Developer Integration (45 minutes)
-1. [vector_database_investigation.md](vector_database_investigation.md)
-2. [chromadb_integration_example.py](chromadb_integration_example.py)
-3. [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
-4. [DOCKER_SETUP.md](DOCKER_SETUP.md)
+1. [ARCHITECTURE.md](ARCHITECTURE.md)
+2. [vector_database_investigation.md](vector_database_investigation.md)
+3. [chromadb_integration_example.py](chromadb_integration_example.py)
+4. [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
+5. [DOCKER_SETUP.md](DOCKER_SETUP.md)
 
 ---
 
@@ -112,13 +131,15 @@ Executive summary of the entire investigation.
 
 | Document | Size | Lines | Purpose |
 |----------|------|-------|---------|
+| README.md | 6.8 KB | ~250 | Documentation index |
 | QUICKSTART.md | 2.3 KB | ~95 | Quick setup |
-| DOCKER_SETUP.md | 9 KB | ~350 | Complete Docker guide |
-| vector_database_investigation.md | 7 KB | ~280 | Research & analysis |
+| DOCKER_SETUP.md | 9.6 KB | ~350 | Complete Docker guide |
+| ARCHITECTURE.md | 18.7 KB | ~526 | Visual diagrams |
+| vector_database_investigation.md | 7.2 KB | ~280 | Research & analysis |
 | MIGRATION_GUIDE.md | 9 KB | ~420 | Migration instructions |
-| chromadb_integration_example.py | 11 KB | ~400 | Code examples |
+| chromadb_integration_example.py | 11.5 KB | ~400 | Code examples |
 | INVESTIGATION_SUMMARY.md | 7.5 KB | ~300 | Executive summary |
-| **Total** | **~46 KB** | **~1,845** | Comprehensive coverage |
+| **Total** | **~72 KB** | **~2,621** | Comprehensive coverage |
 
 ---
 
@@ -129,6 +150,9 @@ Executive summary of the entire investigation.
 
 ### "I need to deploy to production"
 → [DOCKER_SETUP.md](DOCKER_SETUP.md)
+
+### "Show me the architecture diagrams"
+→ [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ### "Why ChromaDB? What are the alternatives?"
 → [vector_database_investigation.md](vector_database_investigation.md)
