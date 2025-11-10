@@ -2,6 +2,8 @@
 
 This guide explains how to deploy the RAG application with ChromaDB vector database using Docker.
 
+> **Note on Docker Compose Commands**: This guide uses `docker-compose` syntax. If you have Docker Compose v2, you can use either `docker-compose` or `docker compose` (with a space). Both commands work identically.
+
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
