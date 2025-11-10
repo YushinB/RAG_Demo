@@ -1,0 +1,274 @@
+# Documentation Index
+
+Welcome to the RAG Demo documentation! This folder contains comprehensive guides for setting up, deploying, and understanding the vector database integration for the RAG application.
+
+## 📚 Documentation Files
+
+### Quick Start & Setup
+
+#### [QUICKSTART.md](QUICKSTART.md)
+**Start here!** Get up and running in under 5 minutes.
+- Prerequisites
+- Fastest way to start
+- Quick commands
+- Basic troubleshooting
+
+**Best for:** First-time users, quick demos
+
+---
+
+#### [DOCKER_SETUP.md](DOCKER_SETUP.md)
+Complete Docker deployment guide with all configuration options.
+- Full setup instructions
+- Configuration options
+- Architecture diagrams
+- Comprehensive troubleshooting
+- Production deployment guidance
+- Security best practices
+
+**Best for:** Production deployments, detailed configuration
+
+---
+
+### Technical Documentation
+
+#### [vector_database_investigation.md](vector_database_investigation.md)
+Detailed research report comparing 6 vector database options.
+- Current state analysis
+- Requirements specification
+- Comparison of 6 databases (ChromaDB, Qdrant, Weaviate, Milvus, pgvector, FAISS)
+- Recommendation and rationale
+- Architecture diagrams
+- Cost and security analysis
+
+**Best for:** Understanding the decision-making process, technical evaluation
+
+---
+
+#### [ARCHITECTURE.md](ARCHITECTURE.md)
+Visual architecture documentation with comprehensive diagrams.
+- Current vs future architecture
+- Docker network architecture
+- Data flow diagrams (embedding & query)
+- Deployment options
+- Component interactions
+- Technology stack
+- Performance comparisons
+- Security architecture
+- Scalability path
+
+**Best for:** Visual learners, architects, understanding system design
+
+---
+
+#### [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
+Step-by-step guide for migrating from pickle files to ChromaDB.
+- Why migrate?
+- Current vs future implementation
+- Detailed migration steps
+- Migration script examples
+- Rollback plan
+- Performance comparisons
+
+**Best for:** Planning migration to ChromaDB, understanding implementation
+
+---
+
+### Code Examples
+
+#### [chromadb_integration_example.py](chromadb_integration_example.py)
+Complete reference implementation for ChromaDB integration.
+- `ChromaDBManager` class
+- Integration functions
+- Test functions
+- Code comments and documentation
+- Usage examples
+
+**Best for:** Developers implementing ChromaDB integration
+
+---
+
+### Summary
+
+#### [INVESTIGATION_SUMMARY.md](INVESTIGATION_SUMMARY.md)
+Executive summary of the entire investigation.
+- What was done
+- Key deliverables
+- Recommendation summary
+- Quick reference
+- Next steps
+
+**Best for:** Project overview, quick reference, stakeholder summary
+
+---
+
+## 🎯 Reading Paths
+
+### Path 1: Quick Setup (5 minutes)
+1. [QUICKSTART.md](QUICKSTART.md)
+
+### Path 2: Understanding the Technology (20 minutes)
+1. [INVESTIGATION_SUMMARY.md](INVESTIGATION_SUMMARY.md)
+2. [ARCHITECTURE.md](ARCHITECTURE.md)
+3. [vector_database_investigation.md](vector_database_investigation.md)
+
+### Path 3: Production Deployment (30 minutes)
+1. [INVESTIGATION_SUMMARY.md](INVESTIGATION_SUMMARY.md)
+2. [ARCHITECTURE.md](ARCHITECTURE.md)
+3. [DOCKER_SETUP.md](DOCKER_SETUP.md)
+4. [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
+
+### Path 4: Developer Integration (45 minutes)
+1. [ARCHITECTURE.md](ARCHITECTURE.md)
+2. [vector_database_investigation.md](vector_database_investigation.md)
+3. [chromadb_integration_example.py](chromadb_integration_example.py)
+4. [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
+5. [DOCKER_SETUP.md](DOCKER_SETUP.md)
+
+---
+
+## 📊 Document Statistics
+
+| Document | Size | Lines | Purpose |
+|----------|------|-------|---------|
+| README.md | 6.8 KB | ~250 | Documentation index |
+| QUICKSTART.md | 2.3 KB | ~95 | Quick setup |
+| DOCKER_SETUP.md | 9.6 KB | ~350 | Complete Docker guide |
+| ARCHITECTURE.md | 18.7 KB | ~526 | Visual diagrams |
+| vector_database_investigation.md | 7.2 KB | ~280 | Research & analysis |
+| MIGRATION_GUIDE.md | 9 KB | ~420 | Migration instructions |
+| chromadb_integration_example.py | 11.5 KB | ~400 | Code examples |
+| INVESTIGATION_SUMMARY.md | 7.5 KB | ~300 | Executive summary |
+| **Total** | **~72 KB** | **~2,621** | Comprehensive coverage |
+
+---
+
+## 🚀 Common Use Cases
+
+### "I want to try it quickly"
+→ [QUICKSTART.md](QUICKSTART.md)
+
+### "I need to deploy to production"
+→ [DOCKER_SETUP.md](DOCKER_SETUP.md)
+
+### "Show me the architecture diagrams"
+→ [ARCHITECTURE.md](ARCHITECTURE.md)
+
+### "Why ChromaDB? What are the alternatives?"
+→ [vector_database_investigation.md](vector_database_investigation.md)
+
+### "How do I migrate from pickle files?"
+→ [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
+
+### "Show me the code"
+→ [chromadb_integration_example.py](chromadb_integration_example.py)
+
+### "Give me the executive summary"
+→ [INVESTIGATION_SUMMARY.md](INVESTIGATION_SUMMARY.md)
+
+---
+
+## 🔍 Key Concepts
+
+### Vector Database
+A specialized database optimized for storing and querying high-dimensional vector embeddings, essential for RAG applications.
+
+### ChromaDB
+The recommended vector database for this project - lightweight, Python-native, and Docker-ready.
+
+### Embeddings
+Dense vector representations of text, generated by models like OpenAI's text-embedding-3-small.
+
+### RAG (Retrieval-Augmented Generation)
+An AI pattern that retrieves relevant context before generating responses, improving accuracy and relevance.
+
+### Docker Compose
+Tool for defining and running multi-container Docker applications with a single configuration file.
+
+---
+
+## 🛠️ Quick Reference Commands
+
+### Start ChromaDB
+```bash
+docker compose up -d chromadb
+```
+
+### Check Status
+```bash
+docker compose ps
+curl http://localhost:8000/api/v1/heartbeat
+```
+
+### View Logs
+```bash
+docker compose logs -f chromadb
+```
+
+### Stop Services
+```bash
+docker compose down
+```
+
+### Test Python Integration
+```bash
+python docs/chromadb_integration_example.py
+```
+
+---
+
+## 📖 External Resources
+
+- **ChromaDB Documentation**: https://docs.trychroma.com/
+- **Docker Documentation**: https://docs.docker.com/
+- **OpenAI Embeddings**: https://platform.openai.com/docs/guides/embeddings
+- **Streamlit Documentation**: https://docs.streamlit.io/
+
+---
+
+## 💡 Pro Tips
+
+1. **Start with QUICKSTART.md** - Get it running first, understand later
+2. **Read INVESTIGATION_SUMMARY.md** - Best overview of what was done
+3. **Keep DOCKER_SETUP.md bookmarked** - You'll reference it often
+4. **Use chromadb_integration_example.py** - Copy-paste ready code
+5. **Follow MIGRATION_GUIDE.md step-by-step** - Don't skip steps
+
+---
+
+## 🤝 Contributing
+
+When adding new documentation:
+1. Follow the existing structure
+2. Include code examples where appropriate
+3. Add troubleshooting sections
+4. Update this README.md index
+5. Keep language clear and concise
+
+---
+
+## 📝 Document Maintenance
+
+| Document | Last Updated | Status |
+|----------|--------------|--------|
+| README.md | 2025-11-10 | ✅ Current |
+| QUICKSTART.md | 2025-11-10 | ✅ Current |
+| DOCKER_SETUP.md | 2025-11-10 | ✅ Current |
+| vector_database_investigation.md | 2025-11-10 | ✅ Current |
+| MIGRATION_GUIDE.md | 2025-11-10 | ✅ Current |
+| chromadb_integration_example.py | 2025-11-10 | ✅ Current |
+| INVESTIGATION_SUMMARY.md | 2025-11-10 | ✅ Current |
+
+---
+
+## ❓ Need Help?
+
+1. Check the relevant documentation file
+2. Review [DOCKER_SETUP.md#troubleshooting](DOCKER_SETUP.md#troubleshooting)
+3. Check ChromaDB logs: `docker compose logs chromadb`
+4. Verify prerequisites are installed
+5. Review [INVESTIGATION_SUMMARY.md](INVESTIGATION_SUMMARY.md) for overview
+
+---
+
+**Happy building!** 🎉

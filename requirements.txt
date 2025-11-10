@@ -8,3 +8,4 @@ pdfplumber
 python-dotenv
 requests
 transformers
+chromadb

@@ -33,6 +33,8 @@ Ask questions in a chat interface. The app retrieves the most relevant chunks an
 
 ## Installation
 
+### Option 1: Local Installation (Traditional)
+
 1. **Clone the repository:**
     ```sh
     git clone <your-repo-url>
@@ -49,6 +51,33 @@ Ask questions in a chat interface. The app retrieves the most relevant chunks an
       ```
       OPENAI_API_KEY=your_openai_api_key_here
       ```
+
+### Option 2: Docker Installation (Recommended for Production)
+
+For deployment with a vector database (ChromaDB), see our comprehensive [Docker Setup Guide](docs/DOCKER_SETUP.md).
+
+**Quick Docker Start:**
+
+1. **Start ChromaDB vector database:**
+    ```sh
+    docker-compose up -d chromadb
+    ```
+
+2. **Set up environment variables:**
+    ```sh
+    cp sample.env .env
+    # Edit .env and add your OPENAI_API_KEY
+    ```
+
+3. **Run the application:**
+    ```sh
+    pip install -r requirements.txt
+    streamlit run rag_app.py
+    ```
+
+For full containerized deployment or advanced configuration, please refer to:
+- 📚 [Docker Setup Guide](docs/DOCKER_SETUP.md) - Complete Docker deployment instructions
+- 🔍 [Vector Database Investigation](docs/vector_database_investigation.md) - Technical details on database selection
 
 ## Usage
 
@@ -113,13 +142,41 @@ Ask questions in a chat interface. The app retrieves the most relevant chunks an
 
 - `rag_app.py` — Main Streamlit application.
 - `embeddings.pkl` — Saved embeddings and chunks (generated at runtime).
+- `docker-compose.yml` — Docker Compose configuration for ChromaDB vector database.
+- `Dockerfile` — Docker configuration for containerizing the Streamlit app.
+- `requirements.txt` — Python package dependencies.
+- `docs/` — Documentation directory
+  - `DOCKER_SETUP.md` — Comprehensive Docker deployment guide
+  - `vector_database_investigation.md` — Vector database research and recommendations
 - `README.md` — This file.
+
+## Vector Database Support
+
+This application now supports ChromaDB as a production-ready vector database alternative to pickle files:
+
+### Why Use a Vector Database?
+
+- **Scalability**: Handle larger datasets efficiently
+- **Concurrent Access**: Multiple users can access embeddings simultaneously
+- **Optimized Search**: Faster similarity search with specialized indexing
+- **Persistence**: Reliable data storage with proper database management
+- **Production-Ready**: Suitable for deployment in production environments
+
+### Storage Options
+
+1. **Pickle Files** (Default): Simple file-based storage, good for demos and development
+2. **ChromaDB** (Recommended for Production): Docker-based vector database with REST API
+
+To learn more about the vector database implementation:
+- See [Vector Database Investigation](docs/vector_database_investigation.md) for technical details
+- See [Docker Setup Guide](docs/DOCKER_SETUP.md) for deployment instructions
 
 ## Notes
 
 - The app uses OpenAI's `text-embedding-3-small` model for embeddings and `gpt-4.1-nano` for answering questions.
 - Ensure your OpenAI API key has access to the required models. Update the key in the ```sample.env``` file, then rename the file to ```.env```.
 - For best results, use websites with mostly textual content.
+- For production deployments, consider using ChromaDB vector database (see Docker setup guide).
 
 ## License
 
